@@ -50,6 +50,10 @@ fi
 
 check-git-installed
 
+if [ ! -d './.git' ]; then
+    error "Not a git repository"
+fi
+
 if [ -z "$1" ]; then
     MERGE_ROOT="master"
     echo "Will rebase on $MERGE_ROOT branch as no merge root given"
@@ -66,10 +70,6 @@ if [ -z "$2" ]; then
     echo "Will check every $CHECK_PERIOD_MINS minutes as no check period given"
 else
     CHECK_PERIOD_MINS="$2"
-fi
-
-if [ ! -d './.git' ]; then
-    error "Not a git repository"
 fi
 
 FROM_REF="$(git rev-parse HEAD)"
