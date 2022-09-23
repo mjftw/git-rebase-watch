@@ -1,6 +1,6 @@
 # Git Rebase Watch
 
-If you're woring in a popular repository, you'll know too well the problem where your pull request has gone out of sync with `main`/`master` branch.  
+If you're working in a popular repository, you'll know too well the problem where your pull request has gone out of sync with `main`/`master` branch.  
 You may now want to rebase your branch to keep it up to date, but doing this every 10 minutes can be a little frustrating.
 
 This helper script does that for you!
