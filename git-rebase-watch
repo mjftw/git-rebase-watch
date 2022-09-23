@@ -25,7 +25,7 @@ function error {
 }
 
 function check-git-installed {
-    if ! command -v gits &>/dev/null; then
+    if ! command -v git &>/dev/null; then
         error "git must be installed"
     fi
 }

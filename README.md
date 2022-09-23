@@ -25,5 +25,5 @@ It is designed to be failsafe and will not push if:
 From your git repsitory directory:
 
 ```shell
-/path/to/my-git-project$ ./git-rebase-watch [upstream branch [period]]
+/path/to/my-git-project$ git-rebase-watch [upstream branch [period]]
 ```
