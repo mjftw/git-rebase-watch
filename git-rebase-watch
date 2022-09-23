@@ -7,7 +7,7 @@ function help-exit {
     echo "for changes. It's main usage is updating pull requests automatically."
     echo 
     echo "If any are found it will:"
-    echo "  * Pull the changes to local brach"
+    echo "  * Pull the changes to local branch"
     echo "  * Rebase the current (feature) branch over the changes"
     echo "  * Push the current branch to update the PR - keeping it in sync with the merge root"
     echo 
