@@ -27,3 +27,9 @@ From your git repsitory directory:
 ```shell
 /path/to/my-git-project$ git-rebase-watch [upstream branch [period]]
 ```
+
+There is usage help for the script that you can get at with:
+
+```shell
+/path/to/my-git-project$ git-rebase-watch --help
+```
