@@ -1,0 +1,102 @@
+#!/bin/bash
+
+function help-exit {
+    echo "Usage: $0 [upstream branch [period]]"
+    echo 
+    echo "This script periodically checks the upstream merge root (usually master)"
+    echo "for changes. It's main usage is updating pull requests automatically."
+    echo 
+    echo "If any are found it will:"
+    echo "  * Pull the changes to local brach"
+    echo "  * Rebase the current (feature) branch over the changes"
+    echo "  * Push the current branch to update the PR - keeping it in sync with the merge root"
+    echo 
+    echo "It is designed to be failsafe and will not push if:"
+    echo "  * The current git HEAD has changed since it started watching. E.g. new commits"
+    echo "  * The name of the current branch has changed since it started watching"
+    echo "  * There are any merge conflicts from rebasing with master"
+    echo "  * Any commits have been added to your upstream (PR) branch"
+    exit 0
+}
+
+function git-rebase-upstream { 
+    git checkout "$1" && git pull && git checkout - && git rebase --committer-date-is-author-date "$1"
+}
+
+function git-can-merge-upstream { 
+    git fetch && [ $(git rev-parse origin/master) == $(git merge-base HEAD origin/$1) ]
+}
+
+function git-upstream-exists {
+    git show-branch remotes/origin/$1
+}
+
+function error {
+    echo "$1..." >&2
+    exit -1
+}
+
+# Parse Arguments & checks
+
+if [ "$1" == "-h" -o "$1" == "--help" ]; then
+    help-exit
+fi
+
+if [ -z "$1" ]; then
+    MERGE_ROOT="master"
+    echo "No merge root given. Will rebase on $MERGE_ROOT branch"
+else
+    MERGE_ROOT="$1"
+fi
+
+if ! git-upstream-exists $MERGE_ROOT; then
+    error "Upstream branch $MERGE_ROOT does not exist"
+fi
+
+if [ -z "$2" ]; then
+    CHECK_PERIOD_MINS=10
+    echo "No check period given. Will check every $CHECK_PERIOD_MINS minutes"
+else
+    CHECK_PERIOD_MINS="$2"
+fi
+
+if [ ! -d './.git' ]; then
+    error "Not a git repository"
+fi
+
+FROM_REF="$(git rev-parse HEAD)"
+BRANCH="$(git branch --show-current)"
+
+echo "Auto rebasing branch $BRANCH on $MERGE_ROOT every $CHECK_PERIOD_MINS mins if out of date"
+
+# Main loop
+while true; do
+    if [ ${FROM_REF} != "$(git rev-parse HEAD)" ]; then
+        error "Git HEAD has changed since checks begun"
+    fi
+
+    if [ ${BRANCH} != "$(git branch --show-current)" ]; then
+        error "Git branch has changed since checks begun"
+    fi
+
+    echo
+    echo "Checking if $BRANCH is out of date with $MERGE_ROOT..."
+
+    if git-can-merge-upstream $MERGE_ROOT; then
+        echo "$BRANCH is up to date with $MERGE_ROOT - no action required"
+    else
+        echo "$BRANCH is out of date with $MERGE_ROOT - rebasing and pushing..."
+
+        if git-rebase-upstream $MERGE_ROOT; then
+            git push --force-with-lease
+
+            # Update the ref so the next loop doesn't exit early
+            FROM_REF="$(git rev-parse HEAD)"
+        else
+            error "Failed to rebase on $MERGE_ROOT"
+        fi
+    fi
+
+    echo "Will check again in $CHECK_PERIOD_MINS mins"
+    sleep $(($CHECK_PERIOD_MINS * 60))
+done
