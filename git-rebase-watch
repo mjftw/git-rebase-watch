@@ -19,6 +19,17 @@ function help-exit {
     exit 0
 }
 
+function error {
+    echo "$1. Exiting..." >&2
+    exit -1
+}
+
+function check-git-installed {
+    if ! command -v gits &>/dev/null; then
+        error "git must be installed"
+    fi
+}
+
 function git-rebase-upstream { 
     git checkout "$1" && git pull && git checkout - && git rebase --committer-date-is-author-date "$1"
 }
@@ -31,16 +42,13 @@ function git-upstream-exists {
     git show-branch remotes/origin/$1
 }
 
-function error {
-    echo "$1..." >&2
-    exit -1
-}
-
 # Parse Arguments & checks
 
 if [ "$1" == "-h" -o "$1" == "--help" ]; then
     help-exit
 fi
+
+check-git-installed
 
 if [ -z "$1" ]; then
     MERGE_ROOT="master"
