@@ -39,7 +39,7 @@ function git-can-merge-upstream {
 }
 
 function git-upstream-exists {
-    git show-branch remotes/origin/$1
+    git show-branch remotes/origin/$1 &>/dev/null
 }
 
 # Parse Arguments & checks
@@ -52,7 +52,7 @@ check-git-installed
 
 if [ -z "$1" ]; then
     MERGE_ROOT="master"
-    echo "No merge root given. Will rebase on $MERGE_ROOT branch"
+    echo "Will rebase on $MERGE_ROOT branch as no merge root given"
 else
     MERGE_ROOT="$1"
 fi
@@ -63,7 +63,7 @@ fi
 
 if [ -z "$2" ]; then
     CHECK_PERIOD_MINS=10
-    echo "No check period given. Will check every $CHECK_PERIOD_MINS minutes"
+    echo "Will check every $CHECK_PERIOD_MINS minutes as no check period given"
 else
     CHECK_PERIOD_MINS="$2"
 fi
@@ -75,10 +75,13 @@ fi
 FROM_REF="$(git rev-parse HEAD)"
 BRANCH="$(git branch --show-current)"
 
+echo
 echo "Auto rebasing branch $BRANCH on $MERGE_ROOT every $CHECK_PERIOD_MINS mins if out of date"
 
 # Main loop
 while true; do
+    echo
+
     if [ ${FROM_REF} != "$(git rev-parse HEAD)" ]; then
         error "Git HEAD has changed since checks begun"
     fi
@@ -105,6 +108,7 @@ while true; do
         fi
     fi
 
-    echo "Will check again in $CHECK_PERIOD_MINS mins"
+    echo
+    echo "Will check again in $CHECK_PERIOD_MINS mins..."
     sleep $(($CHECK_PERIOD_MINS * 60))
 done
