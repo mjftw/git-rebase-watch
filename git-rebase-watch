@@ -75,6 +75,10 @@ fi
 FROM_REF="$(git rev-parse HEAD)"
 BRANCH="$(git branch --show-current)"
 
+if [ "$BRANCH" == "$MERGE_ROOT" ]; then
+    error "Refusing to rebase $BRANCH over itself. Did you know you currently have the $BRANCH branch checked out?"
+fi
+
 echo
 echo "Auto rebasing branch $BRANCH on $MERGE_ROOT every $CHECK_PERIOD_MINS mins if out of date"
 
