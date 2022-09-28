@@ -105,6 +105,7 @@ while true; do
             FROM_REF="$(git rev-parse HEAD)"
         else
             error "Failed to rebase on $MERGE_ROOT"
+            git checkout $BRANCH
         fi
     fi
 
